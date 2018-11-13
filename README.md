@@ -9,26 +9,82 @@ npm install
 npm start
 ````
 
-## Development server
+```html
+<first-app></first-app>
+<hr/>
+<second-app></second-app>
+```
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+```javascript
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
-## Code scaffolding
+@Injectable()
+export class Service {
+    private subject = new Subject < any > ();
+    //private subject = new BehaviorSubject<boolean>(false);
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+    sendData(event) {
+        this.subject.next(event);
+    }
 
-## Build
+    get responseData() {
+        return this.subject.asObservable();
+    }
+}
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+import { Component } from '@angular/core';
+import { Service } from '../bindding.service';
 
-## Running unit tests
+@Component({
+  selector: 'first-app',
+  templateUrl: './first.component.html',
+  styleUrls: ['./first.component.css']
+})
+export class FirstComponent {
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+  constructor(private service: Service) { }
 
-## Running end-to-end tests
+  onKeypress(event: any) {
+    this.service.sendData(event.target.value);
+  }
+}
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+import { Component } from '@angular/core';
+import { Service } from '../bindding.service';
 
-## Further help
+@Component({
+  selector: 'second-app',
+  templateUrl: './second.component.html',
+  styleUrls: ['./second.component.css']
+})
+export class SecondComponent {
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+  content: string = '';
+
+  constructor(private service: Service) {
+    this.service.responseData.forEach(event => this.content = event);
+  }
+
+}
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
+
+import { AppComponent } from './app.component';
+import { FirstComponent } from './first-component/first.component';
+import { SecondComponent } from './second-component/second.component';
+import { Service } from './bindding.service';
+
+@NgModule({
+  imports:      [ BrowserModule, FormsModule ],
+  declarations: [ AppComponent , FirstComponent, SecondComponent],
+  bootstrap:    [ AppComponent ],
+  providers: [Service]
+})
+export class AppModule { }
+```
+
+[https://giai-ma.blogspot.com/2018/11/rxjs-bindding-data.html](https://giai-ma.blogspot.com/2018/11/rxjs-bindding-data.html)
